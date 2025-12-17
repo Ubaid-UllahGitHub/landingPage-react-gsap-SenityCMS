@@ -1,0 +1,302 @@
+import React, { useState, useEffect } from "react";
+import { client, urlFor } from "../../sanityClient";
+
+import {
+    AppBar,
+    Toolbar,
+    Box,
+    Button,
+    IconButton,
+    Drawer,
+    List,
+    ListItem,
+    ListItemButton,
+    ListItemText,
+    useMediaQuery,
+    keyframes,
+} from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
+import CloseIcon from "@mui/icons-material/Close";
+import ContactDrawer from "../ContactDrawer";
+import Logo from "../../assets/logo.svg fill.svg";
+
+// const menuItems = [
+//     { label: "Vision", id: "vision" },
+//     { label: "Services", id: "services" },
+//     { label: "Cases", id: "cases" },
+// ];
+
+const slideDownFast = keyframes`
+  0% {
+    transform: translateY(-60px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+`;
+
+const Header = () => {
+    const [menuItems, setMenuItems] = useState([]);
+
+    useEffect(() => {
+        client
+            .fetch(`
+      *[_type == "headerSection"][0]{
+        menuItems[]{
+          label,
+          id
+        }
+      }
+    `)
+            .then((data) => {
+                if (data?.menuItems?.length) {
+                    setMenuItems(data.menuItems);
+                }
+            })
+            .catch(console.error);
+    }, []);
+
+
+    const [drawerOpen, setDrawerOpen] = useState(false);
+    const [showHeader, setShowHeader] = useState(true);
+    const [lastScrollY, setLastScrollY] = useState(0);
+    const [contactOpen, setContactOpen] = useState(false);
+
+    const isMobile = useMediaQuery("(max-width:1124px)");
+
+    // Scroll handler for hide/show header
+    useEffect(() => {
+        const handleScroll = () => {
+            const currentScrollY = window.scrollY;
+
+            if (currentScrollY > lastScrollY && currentScrollY > 100) {
+                // Scrolling down
+                setShowHeader(false);
+            } else {
+                // Scrolling up
+                setShowHeader(true);
+            }
+
+            setLastScrollY(currentScrollY);
+        };
+
+        window.addEventListener("scroll", handleScroll);
+
+        return () => {
+            window.removeEventListener("scroll", handleScroll);
+        };
+    }, [lastScrollY]);
+
+    const scrollToSection = (id) => {
+        const section = document.getElementById(id);
+        if (!section) return;
+
+        const headerOffset = 120; // height of header
+        const elementPosition = section.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+        window.scrollTo({
+            top: offsetPosition,
+            behavior: "smooth",
+        });
+
+        setDrawerOpen(false); // close mobile menu
+    };
+
+
+    return (
+        <AppBar
+            elevation={0}
+            sx={{
+                backgroundColor: "transparent",
+                position: "fixed", // fixed works better than sticky for this effect
+                top: 0,
+                width: "100%",
+                maxWidth: "1600px",
+                margin: "auto",
+                paddingX: 6,
+                paddingY: 1,
+                transition: "transform 0.3s ease",
+                transform: showHeader ? "translateY(0)" : "translateY(-120px)", // hide when scrolling down
+                zIndex: 100,
+            }}
+        >
+            <Toolbar
+                sx={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    maxWidth: "1600px",
+                    animation: `${slideDownFast} 0.7s ease-out`,
+                    animationFillMode: "forwards",
+                }}
+            >
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, marginLeft: "auto" }}>
+                    {/* Logo */}
+                    <Box
+                        sx={{
+                            width: "46px",
+                            height: "46px",
+                            backgroundColor: "#EEEEEE",
+                            borderRadius: "50px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            cursor: "pointer"
+                        }}
+                    >
+                        <img
+                            onClick={() => {
+                                window.scrollTo({
+                                    top: 0,
+                                    behavior: "smooth", // smooth scroll
+                                });
+                            }}
+                            src={Logo} alt="Logo" width="40" height="40" />
+                    </Box>
+
+                    {/* Desktop Menu */}
+                    {!isMobile && (
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 20 }}>
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    gap: 2,
+                                    alignItems: "center",
+                                    backgroundColor: "#EEEEEE",
+                                    borderRadius: "70px",
+                                    padding: "8px 34px",
+                                }}
+                            >
+                                {menuItems.map((item) => (
+                                    <Box
+                                        key={item.id}
+                                        onClick={() => scrollToSection(item.id)}
+                                        sx={{
+                                            fontSize: "15px",
+                                            fontWeight: 900,
+                                            color: "#1D1D1B",
+                                            cursor: "pointer",
+                                            borderRadius: "12px",
+                                            fontFamily: "Inter Tight, sans-serif",
+                                            padding: "6px 10px",
+                                            "&:hover": { backgroundColor: "#E5E5E5" },
+                                        }}
+                                    >
+                                        {item.label}
+                                    </Box>
+                                ))}
+                            </Box>
+
+                            <Button
+                                variant="contained"
+                                onClick={() => setContactOpen(true)}
+
+                                sx={{
+                                    backgroundColor: "#CAF55E",
+                                    color: "#1D1D1B",
+                                    borderRadius: "30px",
+                                    padding: "9px 18px",
+                                    fontSize: "15px",
+                                    fontWeight: 900,
+                                    fontFamily: "Inter Tight, sans-serif",
+                                    boxShadow: "none",
+                                    textTransform: "none",
+                                    "&:hover": {
+                                        backgroundColor: "#B6E450",
+                                        boxShadow: "none",
+                                    },
+                                    "&:focus": {
+                                        outline: "none",
+                                    },
+
+                                    "&:focus-visible": {
+                                        outline: "none",
+                                        boxShadow: "none",
+                                    },
+
+                                    "&.Mui-focusVisible": {
+                                        outline: "none",
+                                        boxShadow: "none",
+                                    },
+                                }}
+                            >
+                                start a project
+                            </Button>
+                        </Box>
+                    )}
+
+                    {/* Mobile Menu Toggle */}
+                    {isMobile && (
+                        <IconButton onClick={() => setDrawerOpen(true)}>
+                            <MenuIcon sx={{ color: "#1D1D1B" }} />
+                        </IconButton>
+                    )}
+                </Box>
+            </Toolbar>
+
+            {/* Mobile Drawer */}
+            <Drawer anchor="right" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
+                <Box sx={{ width: 250, padding: 2 }}>
+                    <IconButton onClick={() => setDrawerOpen(false)} sx={{ alignSelf: "flex-end" }}>
+                        <CloseIcon />
+                    </IconButton>
+
+                    <List>
+                        {menuItems.map((item) => (
+                            <ListItem key={item.id} disablePadding>
+                                <ListItemButton onClick={() => scrollToSection(item.id)}>
+                                    <ListItemText
+                                        primary={item.label}
+                                        primaryTypographyProps={{
+                                            fontWeight: 900,
+                                            fontSize: "16px",
+                                            fontFamily: "Inter Tight, sans-serif",
+                                        }}
+                                    />
+                                </ListItemButton>
+                            </ListItem>
+                        ))}
+
+                    </List>
+
+                    <Box sx={{ padding: 2 }}>
+                        <Button
+                            fullWidth
+                            onClick={() => {
+                                setDrawerOpen(false);
+                                setContactOpen(true);
+                            }}
+                            variant="contained"
+                            sx={{
+                                backgroundColor: "#CAF55E",
+                                color: "#1D1D1B",
+                                borderRadius: "30px",
+                                fontWeight: 900,
+                                boxShadow: "none",
+                                "&:hover": {
+                                    backgroundColor: "#B6E450",
+                                    boxShadow: "none",
+                                },
+                                "&:focus": { outline: "none" },
+                                "&:focus-visible": { outline: "none" },
+                                "&.Mui-focusVisible": { boxShadow: "none" },
+                            }}
+                        >
+                            start a project
+                        </Button>
+                    </Box>
+                </Box>
+            </Drawer>
+
+            <ContactDrawer
+                open={contactOpen}
+                onClose={() => setContactOpen(false)}
+            />
+
+        </AppBar>
+    );
+};
+
+export default Header;

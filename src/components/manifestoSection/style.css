@@ -1,0 +1,48 @@
+/* Remove all margin from every <p> first */
+.MuiBox-root.css-wq2mxv p {
+    margin: 0;
+}
+
+
+.MuiBox-root.css-wq2mxv p:nth-last-of-type(-n+2) {
+    margin: -30px 0px 0px 0px;
+    position: relative;
+    z-index: 1 !important;
+}
+
+.MuiBox-root.css-wq2mxv p:nth-of-type(-n+3) {
+    margin: 5px 0px 0px 0px;
+}
+
+/* Add space ONLY between the 3rd and 4th p */
+.MuiBox-root.css-wq2mxv p:nth-of-type(3) {
+    margin-bottom: 170px;
+    /* adjust spacing as you want */
+}
+
+
+@media (max-width: 600px) {
+
+    /* Remove all margin from every <p> first */
+    .MuiBox-root.css-6rkx0r p {
+        margin: 0;
+    }
+
+
+    .MuiBox-root.css-6rkx0r p:nth-last-of-type(-n+2) {
+        margin: -7px 0px 0px 0px !important;
+        position: relative;
+        z-index: 1 !important;
+    }
+
+    .MuiBox-root.css-6rkx0r p:nth-of-type(-n+3) {
+        margin: 5px 0px 0px 0px;
+    }
+
+    /* Add space ONLY between the 3rd and 4th p */
+    .MuiBox-root.css-6rkx0r p:nth-of-type(3) {
+        margin-bottom: 70px;
+        /* adjust spacing as you want */
+    }
+
+}

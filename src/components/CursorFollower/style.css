@@ -1,0 +1,25 @@
+.cursor-main {
+    position: fixed;
+    width: 12px;
+    height: 12px;
+    background: black;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 99999;
+    mix-blend-mode: difference;
+}
+
+.cursor-dot {
+    position: fixed;
+    background: black;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 99998;
+    mix-blend-mode: difference;
+}
+
+@media (max-width: 768px) {
+    .custom-cursor {
+        display: none !important;
+    }
+}

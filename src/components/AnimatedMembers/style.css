@@ -1,0 +1,8 @@
+/* Prevent horizontal overflow from buttons/images */
+/* * {
+    box-sizing: border-box;
+} */
+html,
+body {
+    overflow-x: hidden !important;
+}
