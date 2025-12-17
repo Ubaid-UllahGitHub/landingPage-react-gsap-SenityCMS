@@ -1,27 +1,20 @@
-import React from "react";
-import { Box, Grid, Typography, Button } from "@mui/material";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import { Box, Typography } from "@mui/material";
+import img2 from "../../assets/img2.png";
+import { useRef, useLayoutEffect } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { ScrollToPlugin } from "gsap/ScrollToPlugin";
+gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
-import img1 from "../../assets/portfolioimg5.svg";
-import img2 from "../../assets/portfolioimg5.svg";
-import img3 from "../../assets/portfolioimg5.svg";
-import img4 from "../../assets/portfolioimg5.svg";
-import img5 from "../../assets/portfolioimg5.svg";
-
-const bgColors = [
-    "#ffffff",
-    "#fafafa",
-    "#f5f5f5",
-    "#efefef",
-    "#e8e8e8",
-];
-
-const services = [
+// Master Services Array
+const SERVICES = [
     {
-        id: 1,
         title: "Strategy",
-        text: "Know your spot. Set your sights. Plan your path. A solid strategy keeps us grounded and focused.",
-        bullets: [
+        DESCRIPTION:
+            "Know your spot. Set your sights. Plan your path. A solid strategy keeps us grounded and focused, making sure every move we make hits the mark and stays true to what we stand for.",
+        bg: "#ffffff",
+        img: img2,
+        points: [
             "Positioning",
             "Brand Workshop",
             "Insights",
@@ -31,126 +24,329 @@ const services = [
             "Strategic Consulting",
             "Brand Claim",
         ],
-        image: img1,
-        btn: "let’s work together",
     },
     {
-        id: 2,
         title: "Branding",
-        text: "We build identity systems that shape perception.",
-        bullets: ["Logo Design", "Visual Identity", "Brand Guidelines"],
-        image: img2,
-        btn: "Explore Branding",
+        DESCRIPTION:
+            "Know your spot. Set your sights. Plan your path. A solid strategy keeps us grounded and focused, making sure every move we make hits the mark and stays true to what we stand for.",
+        bg: "#E7E7E7",
+        img: img2,
+        points: [
+            "Art Direction",
+            "Visual Identity",
+            "Concept Development",
+            "Brand Guidelines",
+            "Typography",
+            "Illustrations",
+            "Brand Storytelling",
+            "Employer Branding",
+        ],
     },
     {
-        id: 3,
         title: "Digital",
-        text: "Digital-first strategies that move people.",
-        bullets: ["Digital Ads", "SEO", "Content Strategy"],
-        image: img3,
-        btn: "Explore Digital",
+        DESCRIPTION:
+            "Know your spot. Set your sights. Plan your path. A solid strategy keeps us grounded and focused, making sure every move we make hits the mark and stays true to what we stand for.",
+        bg: "#ffffff",
+        img: img2,
+        points: [
+            "Webflow Development",
+            "Web Design",
+            "UX/UI Design",
+            "SEO",
+            "Style Guide",
+            "Storytelling",
+            "Digital Branding",
+        ],
     },
     {
-        id: 4,
         title: "Webflow",
-        text: "High-quality Webflow sites with pixel-perfect animations.",
-        bullets: ["CMS Setup", "Responsive Design", "Custom Animations"],
-        image: img4,
-        btn: "Explore Webflow",
+        DESCRIPTION:
+            "Know your spot. Set your sights. Plan your path. A solid strategy keeps us grounded and focused, making sure every move we make hits the mark and stays true to what we stand for.",
+        bg: "#E7E7E7",
+        img: img2,
+        points: [
+            "Micro Interactions",
+            "Responsive Design",
+            "CMS Integration",
+            "Custom Code",
+            "SEO Optimization",
+            "Performance Tuning",
+            "E-commerce",
+        ],
     },
     {
-        id: 5,
-        title: "Graphic Design",
-        text: "Creative visuals that elevate your brand.",
-        bullets: ["Posters", "Packaging", "Social Media Creatives"],
-        image: img5,
-        btn: "Explore Graphics",
+        title: "Creative Direction",
+        DESCRIPTION:
+            "Know your spot. Set your sights. Plan your path. A solid strategy keeps us grounded and focused, making sure every move we make hits the mark and stays true to what we stand for.",
+        bg: "#ffffff",
+        img: img2,
+        points: [
+            "Campaign Concepts",
+            "Art Direction",
+            "Photography Direction",
+            "Video Direction",
+            "Creative Strategy",
+            "Messaging Frameworks",
+        ],
+    },
+    {
+        title: "Marketing",
+        DESCRIPTION:
+            "Know your spot. Set your sights. Plan your path. A solid strategy keeps us grounded and focused, making sure every move we make hits the mark and stays true to what we stand for.",
+        bg: "#E7E7E7",
+        img: img2,
+        points: [
+            "Social Media Strategy",
+            "Paid Campaigns",
+            "Content Planning",
+            "Copywriting",
+            "Analytics",
+            "Growth Strategy",
+        ],
     },
 ];
 
-export default function ServiceSection() {
+gsap.registerPlugin(ScrollTrigger);
+const ServicesStackSection = () => {
+    const handleScrollToContact = () => {
+        const contact = document.getElementById("contact");
+        if (!contact) return;
+
+        gsap.to(window, {
+            scrollTo: {
+                y: contact,
+                autoKill: false,
+            },
+            duration: 1.2,
+            ease: "power2.out",
+        });
+    };
+
+    const containerRef = useRef(null);
+    const cardRefs = useRef([]);
+
+    useLayoutEffect(() => {
+        const ctx = gsap.context(() => {
+            const cards = cardRefs.current;
+
+            gsap.set(cards, {
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                filter: "brightness(1)",   // 👈 IMPORTANT
+                opacity: 1,                // 👈 IMPORTANT
+            });
+
+            cards.forEach((card, i) => {
+                gsap.set(card, {
+                    backgroundColor: i === 0 ? "#ffffff" : "#E7E7E7",
+                });
+            });
+
+
+            // Initial states
+            cards.forEach((card, i) => {
+                if (i === 0) {
+                    gsap.set(card, { y: 0, opacity: 1 });
+                } else {
+                    gsap.set(card, { y: "100%", opacity: 1 });
+                }
+            });
+
+            const tl = gsap.timeline({
+                scrollTrigger: {
+                    trigger: containerRef.current,
+                    start: "top top",
+                    end: `+=${cards.length * window.innerHeight * 1.3}`,
+                    scrub: 1,           // 👈 DIRECT scroll mapping
+                    pin: true,
+                    anticipatePin: 1,
+                },
+            });
+
+            cards.forEach((card, i) => {
+                if (i === 0) return;
+
+                // Incoming card (from bottom → active)
+                tl.fromTo(
+                    card,
+                    { y: "100%", opacity: 1, filter: "brightness(1)" },
+                    { y: "0%", opacity: 1, filter: "brightness(1)", ease: "none" }
+                );
+
+                // Incoming card → becomes ACTIVE (white)
+                tl.to(
+                    card,
+                    {
+                        backgroundColor: "#ffffff",
+                        ease: "none",
+                    },
+                    "<"
+                );
+
+                // Previous card → goes to BACKGROUND (grey + dim)
+                tl.to(
+                    cards[i - 1],
+                    {
+                        backgroundColor: "#F0F0F0",
+                        opacity: 0.35,
+                        filter: "brightness(0.25)",
+                        ease: "power1.out",
+                    },
+                    "<"
+                );
+
+            });
+        }, containerRef);
+
+        return () => ctx.revert();
+    }, []);
+
     return (
-        <Box sx={{ py: 12, px: 2 }}>
-            {services.map((service, index) => (
+        <Box
+
+            ref={containerRef}
+            sx={{
+                width: "100%",
+                height: { xs: "100vh", md: "100vh" },
+
+                position: "relative",
+                overflow: "hidden",
+                borderTop: "2px solid #E7E7E7",
+            }}
+        >
+            {SERVICES.map((service, index) => (
                 <Box
-                    key={service.id}
+                    key={index}
+                    ref={(el) => (cardRefs.current[index] = el)}
                     sx={{
-                        mb: 10,
-                        p: 6,
-                        borderRadius: 4,
-                        bgcolor: bgColors[index] || "#fff",
-                        boxShadow: "0 10px 40px rgba(0,0,0,0.08)",
+                        width: "100%",
+                        // height: { xs: "none", md: "100%" },
+                        // backgroundColor: service.bg,
+                        height: "100vh",
+                        maxWidth: "1600px",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        flexDirection: { xs: "column", md: "row" },   // ← IMPORTANT
+                        alignItems: "center",
+                        padding: { xs: "110px 20px", md: "0px 50px" },
+                        gap: { xs: 4, md: 6 },
+                        color: "#1D1D1B"
                     }}
                 >
-                    <Grid container spacing={6} alignItems="center">
 
-                        {/* LEFT COLUMN */}
-                        <Grid item xs={12} md={4} sx={{ display: "flex", flexDirection: "column" }}>
-                            <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+                    {/* LEFT COLUMN */}
+                    <Box
+                        sx={{
+                            width: { xs: "100%", sm: "100%", md: "auto" },
+                            display: "flex",
+                            flexDirection: "column",
+                            justifyContent: { xs: "flex-start", md: "space-around" },
+                            height: "100%",
+                        }}
+                    >
+                        <Box sx={{
+
+                        }}>
+                            <Typography
+                                sx={{
+                                    fontSize: { xs: "23px", md: "30px" },
+                                    fontFamily: "Inter Tight, sans-serif",
+                                    letterSpacing: "-1.1px",
+                                    fontWeight: 800,
+                                    textTransform: "lowercase",
+                                    mb: 1,
+                                }}
+                            >
                                 {service.title}
                             </Typography>
 
-                            <Typography sx={{ color: "#555", mb: 3 }}>
-                                {service.text}
-                            </Typography>
-
-                            <Box sx={{ flexGrow: 1 }} />
-
-                            <Button
-                                variant="contained"
+                            <Typography
                                 sx={{
-                                    width: "fit-content",
-                                    bgcolor: "black",
-                                    color: "white",
-                                    px: 3,
-                                    py: 1.2,
-                                    borderRadius: 2,
-                                    textTransform: "none",
-                                    "&:hover": { bgcolor: "#333" },
+                                    fontSize: { xs: "11px", md: "14px" },
+                                    fontFamily: "Inter Tight, sans-serif",
+                                    mb: 3,
+                                    maxWidth: { xs: "86%", md: "450px" },
+                                    lineHeight: 1.4,
                                 }}
                             >
-                                {service.btn}
-                            </Button>
-                        </Grid>
+                                {service.DESCRIPTION}
+                            </Typography>
+                        </Box>
 
-                        {/* MIDDLE COLUMN - BULLETS */}
-                        <Grid item xs={12} md={4}>
-                            {service.bullets.map((b, i) => (
-                                <Box key={i} sx={{ display: "flex", alignItems: "center", mb: 1.5 }}>
-                                    <ArrowForwardIosIcon sx={{ fontSize: 18, mr: 1 }} />
-                                    <Typography sx={{ fontSize: 16 }}>{b}</Typography>
-                                </Box>
-                            ))}
-                        </Grid>
-
-                        {/* RIGHT COLUMN - FIXED SIZE IMAGE */}
-                        <Grid
-                            item
-                            xs={12}
-                            md={4}
-                            sx={{
-                                display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
-                            }}
-                        >
+                        <Box sx={{ mt: { xs: 0, md: 4 } }}>
                             <Box
-                                component="img"
-                                src={service.image}
-                                alt={service.title}
+                                onClick={handleScrollToContact}
+
                                 sx={{
-                                    width: "230px",
-                                    height: "300px",
-                                    objectFit: "cover",
-                                    borderRadius: 2,
+                                    px: { xs: "12px", md: "18px" },
+                                    py: { xs: "12px", md: "18px" },
+                                    fontSize: { xs: "11px", md: "14px" },
+                                    background: "#1D1D1B",
+                                    borderRadius: "30px",
+                                    display: "inline-block",
+                                    color: "white",
+                                    fontWeight: 700,
+                                    fontFamily: "Inter Tight, sans-serif",
+                                    cursor: "pointer",
                                 }}
-                            />
-                        </Grid>
+                            >
+                                let's work together
+                            </Box>
+                        </Box>
+                    </Box>
 
-                    </Grid>
+                    {/* MIDDLE BULLETS */}
+                    <Box
+                        sx={{
+                            display: "flex",
+                            width: { xs: "100%", sm: "100%", md: "auto" },
+                            flexDirection: "column",
+                            gap: 1,
+                            alignItems: "flex-start",
+                            justifyContent: { xs: "flex-start", md: "flex-end" },
+                            height: "100%", marginBottom: { xs: "0", md: "190px" }
+                        }}
+                    >
+                        {service.points.map((p, i) => (
+                            <Typography
+                                key={i}
+                                sx={{
+                                    fontSize: { xs: "11px", md: "14px" },
+                                    fontWeight: 400,
+                                    fontFamily: "Inter Tight, sans-serif",
+                                    lineHeight: 1.5,
+                                    display: "flex",
+                                    alignItems: "center",
+                                }}
+                            >
+                                → {p}
+                            </Typography>
+                        ))}
+                    </Box>
 
-                </Box>
+
+                    {/* RIGHT IMAGE */}
+                    < Box sx={{
+                        paddingRight: "80px", width: { xs: "100%", md: "35%" },
+                    }}>
+                        <img
+                            src={service.img}
+                            style={{
+                                width: "100%",
+                                height: { xs: "400px", md: "auto" },
+                                borderRadius: "8px",
+                                objectFit: "cover",
+
+                            }}
+                            alt=""
+                        />
+                    </Box>
+                </Box >
             ))}
-        </Box>
+        </Box >
     );
-}
+};
+
+export default ServicesStackSection;

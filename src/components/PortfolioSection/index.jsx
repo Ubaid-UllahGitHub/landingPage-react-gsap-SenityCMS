@@ -1,21 +1,40 @@
-import React, { useEffect, useRef } from "react";
 import { Box, Button, Typography } from "@mui/material";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-
-import PortfolioImg1 from "../../assets/portfolioimg1.svg";
-import PortfolioImg2 from "../../assets/portfolioimg2.svg";
-import PortfolioImg3 from "../../assets/portfolioimg3.svg";
-import PortfolioImg4 from "../../assets/portfolioimg4.svg";
-import PortfolioImg5 from "../../assets/portfolioimg5.svg";
-
+import React, { useEffect, useRef, useState } from "react";
+import { client, urlFor } from "../../sanityClient";
 import EyeHeart from "../../assets/eyeheart.svg";
 import ThreeLines from "../../assets/threelines.svg";
+import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 
-gsap.registerPlugin(ScrollTrigger);
+gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
 const PortfolioSection = () => {
+
+    const [items, setItems] = useState([]);
+
+
+    const query = `
+*[_type == "portfolioSection"][0]{
+  items[]{
+    title,
+    subtitle,
+    tags,
+    "image": image.asset->url
+  }
+}
+`;
+
+    useEffect(() => {
+        client.fetch(query).then((data) => {
+            if (data?.items?.length === 5) {
+                setItems(data.items);
+            }
+        });
+    }, []);
+
+
+
 
     const handleScrollToContact = () => {
         const contact = document.getElementById("contact");
@@ -33,86 +52,38 @@ const PortfolioSection = () => {
 
     const sectionRef = useRef(null);
     useEffect(() => {
-        const images = gsap.utils.toArray(".zoom-img");
+        const ctx = gsap.context(() => {
+            gsap.utils.toArray(".zoom-img").forEach((img) => {
+                gsap.fromTo(
+                    img,
+                    { scale: 1.05 },
+                    {
+                        scale: 1.2,
+                        ease: "none",
+                        scrollTrigger: {
+                            trigger: img,
+                            start: "top bottom",
+                            end: "bottom top",
+                            scrub: 0.6,
+                        },
+                    }
+                );
+            });
+            ScrollTrigger.refresh(); // 🔥 FORCE RECALC
 
-        images.forEach((img) => {
-            gsap.fromTo(
-                img,
-                { scale: 1.05 },
-                {
-                    scale: 1.2,
-                    ease: "none",
-                    scrollTrigger: {
-                        trigger: img,
-                        start: "top bottom",
-                        end: "bottom top",
-                        scrub: 0.6,
-                    },
-                }
-            );
-        });
+        }, sectionRef);
 
-        return () => ScrollTrigger.getAll().forEach((t) => t.kill());
-    }, []);
+        return () => ctx.revert();
+    }, [items]); // 🔥 dependency is important
 
 
-
-
-    // ************************************
-    // 🔥 DYNAMIC DATA (This controls layout)
-    // ************************************
-    const portfolioData = [
-        {
-            type: "full",
-            img: PortfolioImg1,
-            tags: ["WEB", "PROMO", "FOOD", "CANADA"],
-            title: "Shawarmaz",
-            subtitle: "Emotional & brittle. A deeply personal digital story toldthrough 10 interactive chapters."
-        },
-        {
-            type: "half",
-            items: [
-                {
-                    img: PortfolioImg2,
-                    tags: ["brand identity", "crypto", "UAE"],
-                    title: "Swap Coffee",
-                    subtitle: "Emotional & brittle. A deeply personal digital story toldthrough 10 interactive chapters."
-                },
-                {
-                    img: PortfolioImg3,
-                    tags: ["WEB", "promo", "marketing", "china"],
-                    title: "FMAG",
-                    subtitle: "Emotional & brittle. A deeply personal digital story toldthrough 10 interactive chapters."
-                },
-            ],
-        },
-        {
-            type: "full",
-            img: PortfolioImg4,
-            tags: ["WEB", "storytelling", "Lativia"],
-            title: "Baiba Sturite",
-            subtitle: "Emotional & brittle. A deeply personal digital story toldthrough 10 interactive chapters."
-        },
-        {
-            type: "half",
-            items: [
-                {
-                    img: PortfolioImg5,
-                    tags: ["brand identity", "food & returant"],
-                    title: "Wake & Shake",
-                    subtitle: "Emotional & brittle. A deeply personal digital story toldthrough 10 interactive chapters."
-                },
-                { type: "cta" }, // RIGHT BOX CTA
-            ],
-        },
-    ];
 
     // ************************************
     // 🔥 FULL WIDTH BOX
     // ************************************
     const FullBox = ({ img, tags, title, subtitle }) => (
         <Box
-            id="cases"
+            className="portfolio-card"
             sx={{
                 position: "relative",
                 width: "100%",
@@ -125,6 +96,7 @@ const PortfolioSection = () => {
         >
             <img
                 src={img}
+                onLoad={() => ScrollTrigger.refresh()}   // 🔥 REQUIRED
                 className="zoom-img"
                 style={{
                     willChange: "transform",
@@ -220,13 +192,15 @@ const PortfolioSection = () => {
     // ************************************
     const HalfBox = ({ img, tags, title, subtitle }) => (
         <Box
+            className="portfolio-card"
+            onLoad={() => ScrollTrigger.refresh()}   // 🔥 REQUIRED
             sx={{
                 flex: { xs: "unset", md: 1.1 },
-                width: { xs: "100%", md: "auto" },
+                px: { xs: 0, md: 6 },
+                width: "100%",
                 position: "relative",
                 maxWidth: "1600px",
                 margin: "auto",
-                px: { xs: 2, sm: 4, md: 6 },
                 height: { xs: "380px", md: "500px" },
                 overflow: "hidden",
                 borderRadius: 2,
@@ -386,39 +360,51 @@ const PortfolioSection = () => {
     // 🔥 RETURN
     // ************************************
     return (
-        <Box sx={{ width: "100%" }}>
+        <Box id="cases" ref={sectionRef} sx={{ width: "100%" }}>
             <Box sx={{ maxWidth: "1600px", mx: "auto", px: 2, display: "flex", flexDirection: "column", gap: "10px" }}>
 
-                {portfolioData.map((row, index) => (
-                    <React.Fragment key={index}>
+                {items.length === 5 && (
+                    <>
+                        {/* 1️⃣ FULL */}
+                        <FullBox
+                            img={items[0].image}
+                            tags={items[0].tags}
+                            title={items[0].title}
+                            subtitle={items[0].subtitle}
+                        />
 
-                        {/* FULL WIDTH ROW */}
-                        {row.type === "full" && (
-                            <FullBox img={row.img} tags={row.tags} title={row.title} subtitle={row.subtitle} />
-                        )}
+                        {/* 2️⃣ HALF + HALF */}
+                        <Box sx={{ display: "flex", gap: "10px", flexDirection: { xs: "column", md: "row" } }}>
+                            <HalfBox key="half-1"
+                                img={items[1].image}
+                                tags={items[1].tags}
+                                title={items[1].title}
+                                subtitle={items[1].subtitle} />
+                            <HalfBox key="half-2"
+                                img={items[2].image}
+                                tags={items[2].tags}
+                                title={items[2].title}
+                                subtitle={items[2].subtitle} />
+                        </Box>
 
-                        {/* HALF WIDTH ROW */}
-                        {row.type === "half" && (
-                            <Box
-                                sx={{
-                                    display: "flex",
-                                    flexDirection: { xs: "column", md: "row" },
-                                    width: "100%",
-                                    gap: "10px",
-                                }}
-                            >
-                                {row.items.map((item, i) =>
-                                    item.type === "cta" ? (
-                                        <CTABox key={i} />
-                                    ) : (
-                                        <HalfBox key={i} img={item.img} tags={item.tags} title={item.title} subtitle={item.subtitle} />
-                                    )
-                                )}
-                            </Box>
-                        )}
+                        {/* 3️⃣ FULL */}
+                        <FullBox
+                            img={items[3].image}
+                            tags={items[3].tags}
+                            title={items[3].title}
+                            subtitle={items[3].subtitle}
+                        />
 
-                    </React.Fragment>
-                ))}
+                        {/* 4️⃣ HALF + CTA */}
+                        <Box sx={{ display: "flex", gap: "10px", flexDirection: { xs: "column", md: "row" } }}>
+                            <HalfBox img={items[4].image}
+                                tags={items[4].tags}
+                                title={items[4].title}
+                                subtitle={items[4].subtitle} />
+                            <CTABox />
+                        </Box>
+                    </>
+                )}
 
             </Box>
         </Box>

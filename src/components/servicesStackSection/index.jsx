@@ -1,117 +1,27 @@
 import { Box, Typography } from "@mui/material";
 import img2 from "../../assets/img2.png";
 import { useRef, useLayoutEffect } from "react";
+import { useEffect, useState } from "react";
+import { client, urlFor } from "../../sanityClient";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
 
-// Shared description text
-
-
-// Master Services Array
-const SERVICES = [
-    {
-        title: "Strategy",
-        DESCRIPTION:
-            "Know your spot. Set your sights. Plan your path. A solid strategy keeps us grounded and focused, making sure every move we make hits the mark and stays true to what we stand for.",
-        bg: "#ffffff",
-        img: img2,
-        points: [
-            "Positioning",
-            "Brand Workshop",
-            "Insights",
-            "Purpose Code",
-            "Brand Name",
-            "Communication Strategy",
-            "Strategic Consulting",
-            "Brand Claim",
-        ],
-    },
-    {
-        title: "Branding",
-        DESCRIPTION:
-            "Know your spot. Set your sights. Plan your path. A solid strategy keeps us grounded and focused, making sure every move we make hits the mark and stays true to what we stand for.",
-        bg: "#E7E7E7",
-        img: img2,
-        points: [
-            "Art Direction",
-            "Visual Identity",
-            "Concept Development",
-            "Brand Guidelines",
-            "Typography",
-            "Illustrations",
-            "Brand Storytelling",
-            "Employer Branding",
-        ],
-    },
-    {
-        title: "Digital",
-        DESCRIPTION:
-            "Know your spot. Set your sights. Plan your path. A solid strategy keeps us grounded and focused, making sure every move we make hits the mark and stays true to what we stand for.",
-        bg: "#ffffff",
-        img: img2,
-        points: [
-            "Webflow Development",
-            "Web Design",
-            "UX/UI Design",
-            "SEO",
-            "Style Guide",
-            "Storytelling",
-            "Digital Branding",
-        ],
-    },
-    {
-        title: "Webflow",
-        DESCRIPTION:
-            "Know your spot. Set your sights. Plan your path. A solid strategy keeps us grounded and focused, making sure every move we make hits the mark and stays true to what we stand for.",
-        bg: "#E7E7E7",
-        img: img2,
-        points: [
-            "Micro Interactions",
-            "Responsive Design",
-            "CMS Integration",
-            "Custom Code",
-            "SEO Optimization",
-            "Performance Tuning",
-            "E-commerce",
-        ],
-    },
-    {
-        title: "Creative Direction",
-        DESCRIPTION:
-            "Know your spot. Set your sights. Plan your path. A solid strategy keeps us grounded and focused, making sure every move we make hits the mark and stays true to what we stand for.",
-        bg: "#ffffff",
-        img: img2,
-        points: [
-            "Campaign Concepts",
-            "Art Direction",
-            "Photography Direction",
-            "Video Direction",
-            "Creative Strategy",
-            "Messaging Frameworks",
-        ],
-    },
-    {
-        title: "Marketing",
-        DESCRIPTION:
-            "Know your spot. Set your sights. Plan your path. A solid strategy keeps us grounded and focused, making sure every move we make hits the mark and stays true to what we stand for.",
-        bg: "#E7E7E7",
-        img: img2,
-        points: [
-            "Social Media Strategy",
-            "Paid Campaigns",
-            "Content Planning",
-            "Copywriting",
-            "Analytics",
-            "Growth Strategy",
-        ],
-    },
-];
 
 gsap.registerPlugin(ScrollTrigger);
 const ServicesStackSection = () => {
+    const [data, setData] = useState(null);
+
+    useEffect(() => {
+        client
+            .fetch(`*[_type == "servicesStackSection"][0]{ services }`)
+            .then((res) => setData(res));
+    }, []);
+
+
+
     const handleScrollToContact = () => {
         const contact = document.getElementById("contact");
         if (!contact) return;
@@ -129,7 +39,10 @@ const ServicesStackSection = () => {
     const containerRef = useRef(null);
     const cardRefs = useRef([]);
 
+    cardRefs.current = [];
+
     useLayoutEffect(() => {
+        if (!data?.services?.length) return;
         const ctx = gsap.context(() => {
             const cards = cardRefs.current;
 
@@ -169,6 +82,10 @@ const ServicesStackSection = () => {
                 },
             });
 
+            requestAnimationFrame(() => {
+                ScrollTrigger.refresh();
+            });
+
             cards.forEach((card, i) => {
                 if (i === 0) return;
 
@@ -205,8 +122,7 @@ const ServicesStackSection = () => {
         }, containerRef);
 
         return () => ctx.revert();
-    }, []);
-
+    }, [data]);
     return (
         <Box
 
@@ -220,7 +136,7 @@ const ServicesStackSection = () => {
                 borderTop: "2px solid #E7E7E7",
             }}
         >
-            {SERVICES.map((service, index) => (
+            {data?.services?.map((service, index) => (
                 <Box
                     key={index}
                     ref={(el) => (cardRefs.current[index] = el)}
@@ -275,7 +191,7 @@ const ServicesStackSection = () => {
                                     lineHeight: 1.4,
                                 }}
                             >
-                                {service.DESCRIPTION}
+                                {service.description}
                             </Typography>
                         </Box>
 
@@ -313,7 +229,7 @@ const ServicesStackSection = () => {
                             height: "100%", marginBottom: { xs: "0", md: "190px" }
                         }}
                     >
-                        {service.points.map((p, i) => (
+                        {service.points?.map((p, i) => (
                             <Typography
                                 key={i}
                                 sx={{
@@ -336,7 +252,8 @@ const ServicesStackSection = () => {
                         paddingRight: "80px", width: { xs: "100%", md: "35%" },
                     }}>
                         <img
-                            src={service.img}
+                            src={urlFor(service.image).width(800).url()}
+                            alt={service.title}
                             style={{
                                 width: "100%",
                                 height: { xs: "400px", md: "auto" },
@@ -344,7 +261,6 @@ const ServicesStackSection = () => {
                                 objectFit: "cover",
 
                             }}
-                            alt=""
                         />
                     </Box>
                 </Box >

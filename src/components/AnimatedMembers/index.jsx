@@ -3,17 +3,37 @@ import React, { useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./style.css";
-
-import member1 from "../../assets/member1.svg";
-import member2 from "../../assets/member2.svg";
-import member3 from "../../assets/member3.svg";
-import member4 from "../../assets/member4.svg";
-import member5 from "../../assets/member5.svg";
-import totalMember from "../../assets/totalmember.svg";
+import { useEffect, useState } from "react";
+import { client, urlFor } from "../../sanityClient";
+// import member1 from "../../assets/member1.svg";
+// import member2 from "../../assets/member2.svg";
+// import member3 from "../../assets/member3.svg";
+// import member4 from "../../assets/member4.svg";
+// import member5 from "../../assets/member5.svg";
+// import totalMember from "../../assets/totalmember.svg";
 
 gsap.registerPlugin(ScrollTrigger);
 
 export default function AnimatedMembers() {
+    const [data, setData] = useState(null);
+
+    const query = `
+*[_type == "animatedMembersSection"][0]{
+  lineOne,
+  lineTwo,
+  wordBeforeImages,
+  wordAfterImages,
+  memberImages
+}
+`;
+    useEffect(() => {
+        client.fetch(query).then((res) => {
+            if (res) setData(res);
+        });
+    }, []);
+
+
+
     const isMobile = window.innerWidth <= 658;
     const isTablet = window.innerWidth > 768 && window.innerWidth <= 1024;
 
@@ -22,9 +42,12 @@ export default function AnimatedMembers() {
     const leftWordRef = useRef(null);
     const rightWordRef = useRef(null);
 
-    const images = [member1, member2, member3, member4, member5, totalMember];
+    // const images = [member1, member2, member3, member4, member5, totalMember];
 
     useLayoutEffect(() => {
+        if (!data) return;
+        if (!imagesRef.current.length) return; // 👈 KEY FIX
+
         const ctx = gsap.context(() => {
             const tl = gsap.timeline({
                 scrollTrigger: {
@@ -33,10 +56,10 @@ export default function AnimatedMembers() {
                     end: "+=800",
                     pin: true,
                     scrub: 1,
+                    invalidateOnRefresh: true,
                 },
             });
 
-            // Initial: Images overlapped + text close together
             gsap.set(imagesRef.current, {
                 xPercent: -50,
                 yPercent: -50,
@@ -47,42 +70,38 @@ export default function AnimatedMembers() {
                 scale: 1,
             });
 
-            gsap.set(leftWordRef.current, { x: isMobile ? 110 : isTablet ? 80 : 110 });
-            gsap.set(rightWordRef.current, { x: isMobile ? -110 : isTablet ? -80 : -110 });
-            // 1️⃣ Move words to create space
-            tl.to(leftWordRef.current, {
-                x: 7,
-                ease: "power2.out",
+            gsap.set(leftWordRef.current, {
+                x: isMobile ? 110 : isTablet ? 80 : 110,
             });
 
-            tl.to(
-                rightWordRef.current,
-                {
-                    x: -3,
-                    ease: "power2.out",
-                },
-                "<"
-            );
+            gsap.set(rightWordRef.current, {
+                x: isMobile ? -110 : isTablet ? -80 : -110,
+            });
 
-            // 2️⃣ Split the images smoothly
+            tl.to(leftWordRef.current, { x: 7, ease: "power2.out" });
+            tl.to(rightWordRef.current, { x: -3, ease: "power2.out" }, "<");
+
             tl.to(
                 imagesRef.current,
                 {
                     x: (i) => {
-                        const center = (images.length - 1) / 2;
-                        const dist = i - center; // negative = left, positive = right, 0 = center
-                        return dist * (isMobile ? 20 : isTablet ? 30 : 40); // spread distance (adjust)
+                        const total = imagesRef.current.length;
+                        const center = (total - 1) / 2;
+                        return (i - center) * (isMobile ? 20 : isTablet ? 30 : 40);
                     },
                     duration: 2,
                     ease: "power3.out",
                 },
                 "<0.2"
             );
-
         }, containerRef);
 
+        ScrollTrigger.refresh();
+
         return () => ctx.revert();
-    }, []);
+    }, [data]);
+
+
 
     return (
         <Box
@@ -118,11 +137,18 @@ export default function AnimatedMembers() {
                     overflow: "hidden",
                 }}
             >
-                Each of our designers <br />
-                was the best among <br />
-                <span ref={leftWordRef} style={{ display: "inline-block", marginRight: "6px", overflow: "hidden", }}>
-                    several
+                {/* Each of our designers <br />
+                was the best among <br /> */}
+                {data?.lineOne} <br />
+                {data?.lineTwo} <br />
+
+                <span
+                    ref={leftWordRef}
+                    style={{ display: "inline-block", marginRight: "6px", overflow: "hidden" }}
+                >
+                    {data?.wordBeforeImages}
                 </span>
+
 
                 <span
                     style={{
@@ -133,11 +159,11 @@ export default function AnimatedMembers() {
                         overflow: "hidden",
                     }}
                 >
-                    {images.map((src, i) => (
+                    {data?.memberImages?.map((img, i) => (
                         <img
                             key={i}
-                            src={src}
                             ref={(el) => (imagesRef.current[i] = el)}
+                            src={urlFor(img).width(120).url()}
                             style={{
                                 width: isMobile ? "40px" : isTablet ? "45px" : "68px",
                                 height: isMobile ? "40px" : isTablet ? "45px" : "68px",
@@ -149,8 +175,12 @@ export default function AnimatedMembers() {
                     ))}
                 </span>
 
-                <span ref={rightWordRef} style={{ display: "inline-block", marginLeft: "6px", overflow: "hidden", }}>
-                    others
+
+                <span
+                    ref={rightWordRef}
+                    style={{ display: "inline-block", marginLeft: "6px", overflow: "hidden" }}
+                >
+                    {data?.wordAfterImages}
                 </span>
 
             </Typography>
