@@ -275,7 +275,6 @@ export default function FooterSection() {
                                 {footerData?.footerEmail}
                             </Typography>
                         </Grid>
-
                     </Grid>
                 </Grid>
 
