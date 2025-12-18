@@ -26,29 +26,32 @@ const MotionSection = () => {
     const bottomRef = useRef(null);
 
     useEffect(() => {
+        if (!content) return; // Wait for content
+
         const ctx = gsap.context(() => {
             const smoothEase = "cubic-bezier(0.22, 1, 0.36, 1)";
 
-            // 1️⃣ FIRST ROW - Top small text (slide from top)
-            gsap.from(topRef.current, {
-                y: -20,
-                opacity: 0,
-                filter: "blur(6px)",
+            const animProps = {
                 duration: 1.3,
                 ease: smoothEase,
+                opacity: 0,
+                willChange: "transform, opacity",
+            };
+
+            gsap.from(topRef.current, {
+                y: -20,
+                filter: "blur(6px)",
+                ...animProps,
                 scrollTrigger: {
                     trigger: topRef.current,
                     start: "top 90%",
                 },
             });
 
-            // 2️⃣ SECOND ROW - Left and Right small texts
             gsap.from(leftRef.current, {
                 x: -20,
-                opacity: 0,
                 filter: "blur(6px)",
-                duration: 1.3,
-                ease: smoothEase,
+                ...animProps,
                 scrollTrigger: {
                     trigger: leftRef.current,
                     start: "top 85%",
@@ -57,37 +60,32 @@ const MotionSection = () => {
 
             gsap.from(rightRef.current, {
                 x: 20,
-                opacity: 0,
                 filter: "blur(6px)",
-                duration: 1.3,
-                ease: smoothEase,
+                ...animProps,
                 scrollTrigger: {
                     trigger: rightRef.current,
                     start: "top 85%",
                 },
             });
 
-            // 3️⃣ CENTER HEADING
             gsap.from(headingRef.current, {
-                opacity: 0,
                 scale: 0.92,
                 y: 15,
                 filter: "blur(10px)",
                 duration: 1.8,
                 ease: smoothEase,
+                opacity: 0,
+                willChange: "transform, opacity",
                 scrollTrigger: {
                     trigger: headingRef.current,
                     start: "top 85%",
                 },
             });
 
-            // 4️⃣ THIRD ROW - Bottom text (slide from bottom)
             gsap.from(bottomRef.current, {
                 y: 20,
-                opacity: 0,
                 filter: "blur(6px)",
-                duration: 1.3,
-                ease: smoothEase,
+                ...animProps,
                 scrollTrigger: {
                     trigger: bottomRef.current,
                     start: "top 90%",
@@ -96,7 +94,8 @@ const MotionSection = () => {
         }, sectionRef);
 
         return () => ctx.revert();
-    }, []);
+    }, [content]); // <-- run GSAP when content loads
+
 
     return (
         <Box
@@ -121,6 +120,7 @@ const MotionSection = () => {
                         color: "#fff",
                         fontSize: "13px",
                         fontFamily: "Inter Tight, sans-serif",
+                        willChange: "transform, opacity",
                     }}
                 >
                     {content?.topText}
@@ -145,6 +145,7 @@ const MotionSection = () => {
                                 color: "#fff",
                                 fontSize: "12px",
                                 fontFamily: "Inter Tight, sans-serif",
+                                willChange: "transform, opacity",
                             }}
                         >
                             {content?.leftText}
@@ -162,6 +163,7 @@ const MotionSection = () => {
                                 color: "#CAF55E",
                                 textAlign: "center",
                                 fontFamily: "Inter Tight, sans-serif",
+                                willChange: "transform, opacity",
                             }}
                         >
                             {content?.centerHeading.split("\n").map((line, i) => (
@@ -181,6 +183,7 @@ const MotionSection = () => {
                                 color: "#fff",
                                 fontSize: "12px",
                                 fontFamily: "Inter Tight, sans-serif",
+                                willChange: "transform, opacity",
                             }}
                         >
                             {content?.rightText}

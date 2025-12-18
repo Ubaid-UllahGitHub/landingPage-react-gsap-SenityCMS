@@ -53,8 +53,9 @@ export default function FooterSection() {
     const randomRef = useRef(null);
 
     useLayoutEffect(() => {
-        const ctx = gsap.context(() => {
+        if (!footerData) return; // wait for data
 
+        const ctx = gsap.context(() => {
             // MENU — slide down
             gsap.from(menuRef.current, {
                 y: -60,
@@ -63,8 +64,8 @@ export default function FooterSection() {
                 ease: "power3.out",
                 scrollTrigger: {
                     trigger: sectionRef.current,
-                    start: "top 80%",  // when section enters view
-                }
+                    start: "top 80%",
+                },
             });
 
             // BIG LOGO — left to right
@@ -77,7 +78,7 @@ export default function FooterSection() {
                 scrollTrigger: {
                     trigger: sectionRef.current,
                     start: "top 75%",
-                }
+                },
             });
 
             // BUTTON — bottom to top
@@ -94,7 +95,7 @@ export default function FooterSection() {
                 },
             });
 
-            // RANDOM IMG — bottom to top + slight rotate
+            // RANDOM IMG — bottom to top + rotate
             gsap.from(randomRef.current, {
                 y: 80,
                 opacity: 0,
@@ -105,13 +106,14 @@ export default function FooterSection() {
                 scrollTrigger: {
                     trigger: sectionRef.current,
                     start: "top 70%",
-                }
+                },
             });
 
         }, sectionRef);
 
         return () => ctx.revert();
-    }, []);
+    }, [footerData]); // <-- run when footerData is ready
+
 
     return (
         <Box
@@ -140,7 +142,7 @@ export default function FooterSection() {
                         textAlign: { xs: "center", md: "left" },
                         flexDirection: { xs: "column", md: "row" },
                         gap: { xs: 2, md: 0 },
-                        willChange: 'transform',
+                        willChange: 'transform, opacity'
                     }}>
 
                     {/* LEFT MENU — 3 ITEMS */}
@@ -236,7 +238,6 @@ export default function FooterSection() {
                                     boxShadow: "0px 4px 10px rgba(0,0,0,0.12)",
                                     textTransform: "lowercase",   // small letters
                                     transition: "0.25s ease",
-                                    willChange: 'transform',
 
                                     "&:hover": {
                                         backgroundColor: "#d4ff74",
@@ -253,7 +254,7 @@ export default function FooterSection() {
 
                             sx={{
                                 textAlign: "center", position: "relative", top: { xs: "-20px", sm: "80px", md: "214px" },
-                                left: { xs: "65px", sm: "180px", md: "770px" }, transform: "translateX(-50%)",
+                                left: { xs: "65px", sm: "180px", md: "770px" }, transform: "translateX(-50%)", willChange: 'transform, opacity',
                                 "@media (min-width:1300px)": {
                                     top: "232px",
                                     left: "955px",
@@ -311,7 +312,7 @@ export default function FooterSection() {
                                     width: "100%", // makes image fill container width
                                     height: "auto", // maintain aspect ratio
                                     display: "block", // remove default inline spacing
-                                    willChange: 'transform',
+                                    willChange: 'transform, opacity'
                                 }}
                             />
                         </Box>
