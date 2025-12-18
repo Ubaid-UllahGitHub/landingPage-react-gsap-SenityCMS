@@ -52,6 +52,7 @@ const VideoSection = () => {
                     pin: true,
                     pinSpacing: true,
                     anticipatePin: 1,
+                    invalidateOnRefresh: true, // ✅ recalc on resize / layout change
                 },
             });
 
@@ -62,7 +63,7 @@ const VideoSection = () => {
         }, sectionRef);
 
         return () => {
-            tl?.scrollTrigger?.kill();
+            // tl?.scrollTrigger?.kill();
             ctx.revert();
         };
     }, [data]);

@@ -1,6 +1,8 @@
 import { Box, Grid, Typography, Button } from "@mui/material";
 import BigLogo from "../../assets/bigLogoFooter.svg";
 import RandomImg from "../../assets/randomimg.svg";
+import { client, urlFor } from "../../sanityClient";
+import { useEffect, useState } from "react";
 
 import { useRef, useLayoutEffect } from "react";
 import gsap from "gsap";
@@ -8,8 +10,27 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
-
 export default function FooterSection() {
+    const [footerData, setFooterData] = useState(null);
+
+    useEffect(() => {
+        client
+            .fetch(`*[_type == "footerSection"][0]`)
+            .then((res) => setFooterData(res));
+    }, []);
+
+
+    const handleScrollToSection = (id) => {
+        const section = document.getElementById(id);
+        if (!section || !window.lenis) return;
+
+        const headerOffset = 120; // same offset as header
+        const y = section.getBoundingClientRect().top + window.pageYOffset - headerOffset;
+
+        window.lenis.scrollTo(y);
+    };
+
+
 
     const handleScrollToContact = () => {
         const contact = document.getElementById("contact");
@@ -66,10 +87,11 @@ export default function FooterSection() {
                 duration: 1.3,
                 delay: 0.5,
                 ease: "power3.out",
+                force3D: true,
                 scrollTrigger: {
                     trigger: sectionRef.current,
                     start: "top 70%",
-                }
+                },
             });
 
             // RANDOM IMG — bottom to top + slight rotate
@@ -117,26 +139,28 @@ export default function FooterSection() {
                         alignItems: "center",
                         textAlign: { xs: "center", md: "left" },
                         flexDirection: { xs: "column", md: "row" },
-                        gap: { xs: 2, md: 0 }
+                        gap: { xs: 2, md: 0 },
+                        willChange: 'transform',
                     }}>
 
                     {/* LEFT MENU — 3 ITEMS */}
                     <Grid item >
                         <Grid container spacing={4} sx={{ marginLeft: { xs: 0, md: "80px" }, justifyContent: { xs: "center", md: "flex-start" } }}>
-                            {["Vision", "Cases", "Services"].map((item, i) => (
+                            {footerData?.menuItems?.map((item, i) => (
                                 <Grid item key={i} >
                                     <Typography
-                                        sx={{
+                                        onClick={() => handleScrollToSection(item.scrollId)} sx={{
                                             fontSize: { xs: "12px", sm: "13px", md: "15px" },
                                             fontWeight: 500,
                                             cursor: "pointer",
                                             fontFamily: "Inter Tight, sans-serif",
                                             "&:hover": { opacity: 0.6 },
                                             textTransform: "Lowercase",
-                                            marginLeft: "20px"
+                                            marginLeft: "20px",
+                                            willChange: 'transform',
                                         }}
                                     >
-                                        {item}
+                                        {item.label}
                                     </Typography>
                                 </Grid>
                             ))}
@@ -146,24 +170,28 @@ export default function FooterSection() {
                     {/* RIGHT MENU — 2 ITEMS */}
                     <Grid item>
                         <Grid container spacing={4} sx={{ marginRight: { xs: 0, md: "80px" }, justifyContent: { xs: "center", md: "flex-end" } }}>
-                            {["Behance", "Instagram"].map((item, i) => (
-                                <Grid item key={i}>
-                                    <Typography
-                                        sx={{
-                                            fontSize: { xs: "10px", sm: "13px", md: "15px" },
-
-                                            fontWeight: 500,
-                                            color: "#fff",
-                                            fontFamily: "Inter Tight, sans-serif",
-                                            cursor: "pointer",
-                                            "&:hover": { opacity: 0.6 },
-                                            textTransform: "Uppercase",
-                                            marginRight: "20px"
-                                        }}
-                                    >
-                                        {item}
-                                    </Typography>
-                                </Grid>
+                            {footerData?.socialLinks?.map((item, i) =>
+                            (<Grid item key={i}>
+                                <Typography
+                                    component="a"
+                                    href={item.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    sx={{
+                                        fontSize: { xs: "10px", sm: "13px", md: "15px" },
+                                        fontWeight: 500,
+                                        color: "#fff",
+                                        fontFamily: "Inter Tight, sans-serif",
+                                        cursor: "pointer",
+                                        "&:hover": { opacity: 0.6 },
+                                        textTransform: "uppercase",
+                                        marginRight: "20px",
+                                        textDecoration: "none",
+                                    }}
+                                >
+                                    {item.label}
+                                </Typography>
+                            </Grid>
                             ))}
                         </Grid>
                     </Grid>
@@ -208,6 +236,7 @@ export default function FooterSection() {
                                     boxShadow: "0px 4px 10px rgba(0,0,0,0.12)",
                                     textTransform: "lowercase",   // small letters
                                     transition: "0.25s ease",
+                                    willChange: 'transform',
 
                                     "&:hover": {
                                         backgroundColor: "#d4ff74",
@@ -242,7 +271,7 @@ export default function FooterSection() {
                             <Typography sx={{
                                 fontSize: { xs: "10px", sm: "12px", md: "15px" }, fontFamily: "Inter Tight, sans-serif", marginTop: { xs: "10px", sm: "20px", md: "30px" },
                             }}>
-                                project@uzzystudio.com
+                                {footerData?.footerEmail}
                             </Typography>
                         </Grid>
 
@@ -276,12 +305,13 @@ export default function FooterSection() {
                         >
                             <img
                                 ref={logoRef}
-                                src={BigLogo}
-                                alt="big logo"
+                                src={footerData?.footerLogo ? urlFor(footerData.footerLogo).width(2000).url() : ""}
+                                alt="footer logo"
                                 style={{
                                     width: "100%", // makes image fill container width
                                     height: "auto", // maintain aspect ratio
                                     display: "block", // remove default inline spacing
+                                    willChange: 'transform',
                                 }}
                             />
                         </Box>

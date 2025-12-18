@@ -2,10 +2,22 @@ import React, { useEffect, useRef } from "react";
 import { Box, Typography } from "@mui/material";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { client } from "../../sanityClient";
+import { useState } from "react";
+
 
 gsap.registerPlugin(ScrollTrigger);
 
 const MotionSection = () => {
+
+    const [content, setContent] = useState(null);
+
+    useEffect(() => {
+        client
+            .fetch(`*[_type == "motionSection"][0]`)
+            .then((res) => setContent(res));
+    }, []);
+
     const sectionRef = useRef(null);
     const topRef = useRef(null);
     const leftRef = useRef(null);
@@ -111,7 +123,7 @@ const MotionSection = () => {
                         fontFamily: "Inter Tight, sans-serif",
                     }}
                 >
-                    (TALK IS CHEAP. RESULTS AREN’T)
+                    {content?.topText}
                 </Typography>
 
                 {/* Row 2 - Left, Center, Right */}
@@ -135,7 +147,7 @@ const MotionSection = () => {
                                 fontFamily: "Inter Tight, sans-serif",
                             }}
                         >
-                            CULTURE IN MOTION
+                            {content?.leftText}
                         </Typography>
                     </Box>
 
@@ -152,7 +164,12 @@ const MotionSection = () => {
                                 fontFamily: "Inter Tight, sans-serif",
                             }}
                         >
-                            HELPING BRANDS <br /> MOVE THE WORLD <br /> FORWARD
+                            {content?.centerHeading.split("\n").map((line, i) => (
+                                <React.Fragment key={i}>
+                                    {line}
+                                    <br />
+                                </React.Fragment>
+                            ))}
                         </Typography>
                     </Box>
 
@@ -166,7 +183,7 @@ const MotionSection = () => {
                                 fontFamily: "Inter Tight, sans-serif",
                             }}
                         >
-                            IMPACT BY DESIGN
+                            {content?.rightText}
                         </Typography>
                     </Box>
                 </Box>
@@ -180,7 +197,7 @@ const MotionSection = () => {
                         fontFamily: "Inter Tight, sans-serif",
                     }}
                 >
-                    LET’S MAKE SOMETHING UNFORGETTABLE
+                    {content?.bottomText}
                 </Typography>
             </Box>
         </Box>
