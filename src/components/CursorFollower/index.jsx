@@ -1,39 +1,48 @@
 import React, { useEffect, useRef } from "react";
 import "./style.css";
+
 const CursorFollower = () => {
     const cursorRef = useRef(null);
-    const pos = useRef({ x: 0, y: 0 });       // actual mouse position
-    const follower = useRef({ x: 0, y: 0 });  // follower dot position
+    const pos = useRef({ x: 0, y: 0 });
+    const follower = useRef({ x: 0, y: 0 });
+    const rafId = useRef(null);
 
     useEffect(() => {
         const handleMouseMove = (e) => {
-            pos.current = { x: e.clientX, y: e.clientY };
+            pos.current.x = e.clientX;
+            pos.current.y = e.clientY;
         };
 
-        window.addEventListener("mousemove", handleMouseMove);
+        window.addEventListener("mousemove", handleMouseMove, { passive: true });
 
         const animate = () => {
-            // move follower slightly towards the actual mouse
-            follower.current.x += (pos.current.x - follower.current.x) * 0.05; // 0.1 = speed
+            follower.current.x += (pos.current.x - follower.current.x) * 0.05;
             follower.current.y += (pos.current.y - follower.current.y) * 0.05;
 
             if (cursorRef.current) {
                 cursorRef.current.style.transform = `translate3d(${follower.current.x}px, ${follower.current.y}px, 0)`;
             }
 
-            requestAnimationFrame(animate);
+            rafId.current = requestAnimationFrame(animate);
         };
 
-        animate();
+        rafId.current = requestAnimationFrame(animate);
 
-        return () => window.removeEventListener("mousemove", handleMouseMove);
+        return () => {
+            // ✅ STOP animation loop
+            if (rafId.current) {
+                cancelAnimationFrame(rafId.current);
+            }
+
+            // ✅ REMOVE listener
+            window.removeEventListener("mousemove", handleMouseMove);
+        };
     }, []);
 
     return (
         <div
             ref={cursorRef}
             className="custom-cursor"
-
             style={{
                 position: "fixed",
                 top: 0,

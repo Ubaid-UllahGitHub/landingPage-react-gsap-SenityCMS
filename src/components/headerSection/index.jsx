@@ -68,42 +68,43 @@ const Header = () => {
 
     // Scroll handler for hide/show header
     useEffect(() => {
+        let lastY = window.scrollY;
+
         const handleScroll = () => {
             const currentScrollY = window.scrollY;
 
-            if (currentScrollY > lastScrollY && currentScrollY > 100) {
-                // Scrolling down
+            if (currentScrollY > lastY && currentScrollY > 100) {
                 setShowHeader(false);
             } else {
-                // Scrolling up
                 setShowHeader(true);
             }
 
-            setLastScrollY(currentScrollY);
+            lastY = currentScrollY;
         };
 
-        window.addEventListener("scroll", handleScroll);
+        window.addEventListener("scroll", handleScroll, { passive: true });
 
         return () => {
             window.removeEventListener("scroll", handleScroll);
         };
-    }, [lastScrollY]);
+    }, []);
+
 
     const scrollToSection = (id) => {
         const section = document.getElementById(id);
-        if (!section) return;
+        if (!section || !window.lenis) return;
 
-        const headerOffset = 120; // height of header
-        const elementPosition = section.getBoundingClientRect().top;
-        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+        const headerOffset = 120;
+        const y =
+            section.getBoundingClientRect().top +
+            window.pageYOffset -
+            headerOffset;
 
-        window.scrollTo({
-            top: offsetPosition,
-            behavior: "smooth",
-        });
+        window.lenis.scrollTo(y);
 
-        setDrawerOpen(false); // close mobile menu
+        setDrawerOpen(false);
     };
+
 
 
     return (

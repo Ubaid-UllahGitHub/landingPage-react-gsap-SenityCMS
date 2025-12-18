@@ -5,8 +5,8 @@ import { useEffect, useState } from "react";
 import { client, urlFor } from "../../sanityClient";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { ScrollToPlugin } from "gsap/ScrollToPlugin";
-gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+// import { ScrollToPlugin } from "gsap/ScrollToPlugin";
+gsap.registerPlugin(ScrollTrigger);
 
 
 
@@ -24,17 +24,19 @@ const ServicesStackSection = () => {
 
     const handleScrollToContact = () => {
         const contact = document.getElementById("contact");
-        if (!contact) return;
+        if (!contact || !window.lenis) return;
 
-        gsap.to(window, {
-            scrollTo: {
-                y: contact,
-                autoKill: false,
-            },
+        const y =
+            contact.getBoundingClientRect().top +
+            window.pageYOffset -
+            120;
+
+        window.lenis.scrollTo(y, {
             duration: 1.2,
-            ease: "power2.out",
+            easing: (t) => 1 - Math.pow(1 - t, 3),
         });
     };
+
 
     const containerRef = useRef(null);
     const cardRefs = useRef([]);
@@ -43,89 +45,80 @@ const ServicesStackSection = () => {
 
     useLayoutEffect(() => {
         if (!data?.services?.length) return;
+
         const ctx = gsap.context(() => {
             const cards = cardRefs.current;
 
+            // 🔹 Base card setup
             gsap.set(cards, {
                 position: "absolute",
                 top: 0,
                 left: 0,
                 width: "100%",
-                filter: "brightness(1)",   // 👈 IMPORTANT
-                opacity: 1,                // 👈 IMPORTANT
+                height: "100%",
             });
 
+            // 🔹 Initial states
             cards.forEach((card, i) => {
                 gsap.set(card, {
+                    y: i === 0 ? 0 : "100%",
+                    opacity: i === 0 ? 1 : 1,
+                    filter: i === 0 ? "brightness(1)" : "brightness(1)",
                     backgroundColor: i === 0 ? "#ffffff" : "#E7E7E7",
                 });
             });
 
-
-            // Initial states
-            cards.forEach((card, i) => {
-                if (i === 0) {
-                    gsap.set(card, { y: 0, opacity: 1 });
-                } else {
-                    gsap.set(card, { y: "100%", opacity: 1 });
-                }
-            });
-
+            // 🔹 Slow, smooth pinned timeline
             const tl = gsap.timeline({
                 scrollTrigger: {
                     trigger: containerRef.current,
                     start: "top top",
-                    end: `+=${cards.length * window.innerHeight * 1.3}`,
-                    scrub: 1,           // 👈 DIRECT scroll mapping
+                    end: `+=${cards.length * window.innerHeight * 1.5}`, // 🔥 slower
+                    scrub: 1.5,              // 🔥 smoother scrub
                     pin: true,
                     anticipatePin: 1,
+                    invalidateOnRefresh: true,
                 },
             });
 
-            requestAnimationFrame(() => {
-                ScrollTrigger.refresh();
-            });
-
+            // 🔹 Card transitions
             cards.forEach((card, i) => {
                 if (i === 0) return;
 
-                // Incoming card (from bottom → active)
+                // Incoming card
                 tl.fromTo(
                     card,
-                    { y: "100%", opacity: 1, filter: "brightness(1)" },
-                    { y: "0%", opacity: 1, filter: "brightness(1)", ease: "none" }
+                    { y: "100%" },
+                    { y: "0%", ease: "none", duration: 1 }
                 );
 
-                // Incoming card → becomes ACTIVE (white)
-                tl.to(
-                    card,
-                    {
-                        backgroundColor: "#ffffff",
-                        ease: "none",
-                    },
-                    "<"
-                );
-
-                // Previous card → goes to BACKGROUND (grey + dim)
+                // Previous card fades + dims
                 tl.to(
                     cards[i - 1],
                     {
-                        backgroundColor: "#F0F0F0",
-                        opacity: 0.35,
+                        opacity: 0.25,
                         filter: "brightness(0.25)",
-                        ease: "power1.out",
+                        backgroundColor: "#F0F0F0",
+                        ease: "none",
+                        duration: 1,
                     },
                     "<"
                 );
-
             });
         }, containerRef);
 
-        return () => ctx.revert();
+        return () => {
+            ctx.revert(); // ✅ kills ScrollTrigger + timeline cleanly
+        };
     }, [data]);
+    ScrollTrigger.matchMedia({
+        "(max-width: 768px)": () => {
+            ScrollTrigger.getAll().forEach(t => t.kill());
+        },
+    });
+
     return (
         <Box
-
             ref={containerRef}
             sx={{
                 width: "100%",

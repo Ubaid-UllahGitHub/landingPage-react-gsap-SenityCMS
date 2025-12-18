@@ -19,19 +19,61 @@ import Lenis from "@studio-freight/lenis";
 function App() {
 
   useEffect(() => {
+    if (!window.lenis) return;
+
+    window.lenis.on("scroll", ScrollTrigger.update);
+
+    ScrollTrigger.scrollerProxy(document.body, {
+      scrollTop(value) {
+        return arguments.length
+          ? window.lenis.scrollTo(value)
+          : window.lenis.scroll;
+      },
+      getBoundingClientRect() {
+        return {
+          top: 0,
+          left: 0,
+          width: window.innerWidth,
+          height: window.innerHeight,
+        };
+      },
+    });
+
+    ScrollTrigger.defaults({
+      scroller: document.body,
+    });
+
+    ScrollTrigger.refresh();
+  }, []);
+
+  useEffect(() => {
     const lenis = new Lenis({
-      duration: 1.2,     // smoother feeling
-      easing: (t) => 1 - Math.pow(1 - t, 3), // ease-out cubic
+      duration: 1.2,
+      easing: (t) => 1 - Math.pow(1 - t, 3),
       smoothWheel: true,
       smoothTouch: true,
     });
 
-    function raf(time) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
+    // ✅ expose globally (for header / other components)
+    window.lenis = lenis;
+    let rafId;
 
-    requestAnimationFrame(raf);
+    const raf = (time) => {
+      lenis.raf(time);
+      rafId = requestAnimationFrame(raf);
+    };
+
+    rafId = requestAnimationFrame(raf);
+
+    return () => {
+      // ✅ STOP RAF LOOP
+      cancelAnimationFrame(rafId);
+
+      // ✅ REMOVE ALL LENIS LISTENERS
+      lenis.destroy();
+      // ✅ remove global reference
+      delete window.lenis;
+    };
   }, []);
   return (
     <>
