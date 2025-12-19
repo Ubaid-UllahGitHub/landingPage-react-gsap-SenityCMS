@@ -21,6 +21,8 @@ import Smiley from "../../assets/smiley face.svg";
 // const images = [...originalImages, ...originalImages, ...originalImages];
 
 const SmoothAlternatingSlider1 = () => {
+    const isDesktop = useMediaQuery("(hover: hover) and (pointer: fine)");
+
 
     const [originalImages, setOriginalImages] = useState([]);
     const images =
@@ -55,6 +57,7 @@ const SmoothAlternatingSlider1 = () => {
     const [cursorActive, setCursorActive] = useState(false);
 
     useEffect(() => {
+
         const handleScroll = () => {
             if (!containerRef.current || !cursorActive) return;
 
@@ -77,6 +80,7 @@ const SmoothAlternatingSlider1 = () => {
 
 
     const handleMouseMove = (e) => {
+        if (!isDesktop) return;
         lastMousePos.current = {
             x: e.clientX,
             y: e.clientY,
@@ -145,9 +149,12 @@ const SmoothAlternatingSlider1 = () => {
 
 
 
-    useEffect(() => {
-        let raf;
 
+
+    useEffect(() => {
+        if (!isDesktop) return;
+
+        let raf;
         const animateCursor = () => {
             cursorCurrent.current.x +=
                 (cursorTarget.current.x - cursorCurrent.current.x) * 0.18;
@@ -164,7 +171,8 @@ const SmoothAlternatingSlider1 = () => {
 
         raf = requestAnimationFrame(animateCursor);
         return () => cancelAnimationFrame(raf);
-    }, []);
+    }, [isDesktop]);
+
 
 
     /** ---------------- DRAG ---------------- */
@@ -172,6 +180,8 @@ const SmoothAlternatingSlider1 = () => {
     const startOffset = useRef(0);
 
     useEffect(() => {
+        if (!isDesktop) return; // 🚫 no drag on mobile
+
         const slider = sliderRef.current;
         if (!slider) return;
 
@@ -181,50 +191,39 @@ const SmoothAlternatingSlider1 = () => {
             startOffset.current = offset;
         };
 
-        const drag = (x) => {
+        const handleMouseDown = (e) => startDrag(e.clientX);
+        const handleMouseMove = (e) => {
+            if (!isDesktop) return;
             if (!isDragging.current) return;
-            setOffset(startOffset.current + (x - startX.current));
+            setOffset(startOffset.current + (e.clientX - startX.current));
         };
-
-        const endDrag = () => {
+        const handleMouseUp = () => {
             isDragging.current = false;
-            const block = totalWidth / 3;
-            setOffset((prev) => {
-                if (prev > -block) return prev - block;
-                if (prev < -block * 2) return prev + block;
-                return prev;
-            });
         };
 
-        slider.addEventListener("mousedown", (e) => startDrag(e.clientX));
-        window.addEventListener("mousemove", (e) => drag(e.clientX));
-        window.addEventListener("mouseup", endDrag);
-
-        slider.addEventListener("touchstart", (e) =>
-            startDrag(e.touches[0].clientX)
-        );
-        window.addEventListener("touchmove", (e) =>
-            drag(e.touches[0].clientX)
-        );
-        window.addEventListener("touchend", endDrag);
+        slider.addEventListener("mousedown", handleMouseDown);
+        window.addEventListener("mousemove", handleMouseMove);
+        window.addEventListener("mouseup", handleMouseUp);
 
         return () => {
-            window.removeEventListener("mousemove", drag);
-            window.removeEventListener("mouseup", endDrag);
-            window.removeEventListener("touchmove", drag);
-            window.removeEventListener("touchend", endDrag);
+            slider.removeEventListener("mousedown", handleMouseDown);
+            window.removeEventListener("mousemove", handleMouseMove);
+            window.removeEventListener("mouseup", handleMouseUp);
         };
-    }, [offset, totalWidth]);
+    }, [offset, isDesktop]);
+
 
 
     useEffect(() => {
+        if (!isDesktop) return;
+
         const container = containerRef.current;
         if (!container) return;
 
         const onWheel = (e) => {
-            // Trackpad horizontal scroll
             if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
-                e.preventDefault(); // stop page scroll
+                e.preventDefault();
+
                 isHovered.current = true;
 
                 setOffset((prev) => {
@@ -244,7 +243,8 @@ const SmoothAlternatingSlider1 = () => {
         return () => {
             container.removeEventListener("wheel", onWheel);
         };
-    }, [totalWidth]);
+    }, [totalWidth, isDesktop]);
+
 
     return (
         <Box
@@ -257,7 +257,7 @@ const SmoothAlternatingSlider1 = () => {
                 isDragging.current = false;
                 handleCursorLeave();
             }}
-            onMouseMove={handleMouseMove}
+            onMouseMove={isDesktop ? handleMouseMove : undefined}
             sx={{
                 width: "100%",
                 maxWidth: "1600px",

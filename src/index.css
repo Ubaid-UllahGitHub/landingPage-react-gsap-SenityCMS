@@ -74,3 +74,9 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+@media (hover: none) {
+  .custom-cursor {
+    display: none;
+  }
+}

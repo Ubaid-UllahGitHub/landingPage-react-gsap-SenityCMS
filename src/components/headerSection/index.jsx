@@ -66,20 +66,28 @@ const Header = () => {
 
     const isMobile = useMediaQuery("(max-width:1124px)");
 
-    // Scroll handler for hide/show header
+    // Scroll handler for hide/show header (optimized)
     useEffect(() => {
         let lastY = window.scrollY;
+        let ticking = false;
 
         const handleScroll = () => {
-            const currentScrollY = window.scrollY;
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    const currentY = window.scrollY;
 
-            if (currentScrollY > lastY && currentScrollY > 100) {
-                setShowHeader(false);
-            } else {
-                setShowHeader(true);
+                    if (currentY > lastY && currentY > 100) {
+                        setShowHeader(prev => (prev ? false : prev));
+                    } else {
+                        setShowHeader(prev => (!prev ? true : prev));
+                    }
+
+                    lastY = currentY;
+                    ticking = false;
+                });
+
+                ticking = true;
             }
-
-            lastY = currentScrollY;
         };
 
         window.addEventListener("scroll", handleScroll, { passive: true });
@@ -88,6 +96,8 @@ const Header = () => {
             window.removeEventListener("scroll", handleScroll);
         };
     }, []);
+
+
 
 
     const scrollToSection = (id) => {

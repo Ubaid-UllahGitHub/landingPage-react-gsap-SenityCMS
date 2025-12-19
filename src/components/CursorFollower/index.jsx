@@ -8,6 +8,10 @@ const CursorFollower = () => {
     const rafId = useRef(null);
 
     useEffect(() => {
+        const isTouchDevice =
+            "ontouchstart" in window || navigator.maxTouchPoints > 0;
+
+        if (isTouchDevice) return; // 🚫 skip everything on mobile
         const handleMouseMove = (e) => {
             pos.current.x = e.clientX;
             pos.current.y = e.clientY;
