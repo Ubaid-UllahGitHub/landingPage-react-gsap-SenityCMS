@@ -7,10 +7,9 @@ import MotionSection from './components/MotionSection';
 import FooterSection from './components/FooterSection';
 import VideoSection from './components/VideoSection';
 import PortfolioSection from './components/PortfolioSection';
-// import ServicesSection from './components/ServicesSection';
 import ServicesStackSection from './components/servicesStackSection';
 import CursorFollower from './components/CursorFollower';
-import AnimatedMembers from './components/AnimatedMembers';
+// import AnimatedMembers from './components/AnimatedMembers';
 import ContactSection from './components/ContactSection';
 import SmoothAlternatingSlider1 from './components/imgsSlider';
 import { useEffect } from "react";
@@ -80,16 +79,14 @@ function App() {
       <CursorFollower />
       <Header />
       <Hero />
-      {/* <SmoothAlternatingSlider /> */}
       <SmoothAlternatingSlider1 />
       <CreativeTextSection />
       <ManifestoSection />
       <ServicesStackSection />
-      {/* <ServicesSection /> */}
       <MotionSection />
       <VideoSection />
       <PortfolioSection />
-      <AnimatedMembers />
+      {/* <AnimatedMembers /> */}
       <ContactSection />
       <FooterSection />
 
