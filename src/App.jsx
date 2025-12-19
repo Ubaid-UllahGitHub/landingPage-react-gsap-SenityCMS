@@ -9,7 +9,7 @@ import VideoSection from './components/VideoSection';
 import PortfolioSection from './components/PortfolioSection';
 import ServicesStackSection from './components/servicesStackSection';
 import CursorFollower from './components/CursorFollower';
-// import AnimatedMembers from './components/AnimatedMembers';
+import AnimatedMembers from './components/AnimatedMembers';
 import ContactSection from './components/ContactSection';
 import SmoothAlternatingSlider1 from './components/imgsSlider';
 import { useEffect } from "react";
@@ -86,10 +86,9 @@ function App() {
       <MotionSection />
       <VideoSection />
       <PortfolioSection />
-      {/* <AnimatedMembers /> */}
+      <AnimatedMembers />
       <ContactSection />
       <FooterSection />
-
     </>
   );
 }
